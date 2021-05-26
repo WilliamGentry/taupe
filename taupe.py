@@ -1,3 +1,11 @@
+# To Do
+# Designate tasks as being able to break up into smaller chunks
+# Warning about dropped tasks
+# Auto-check for rosaries, silent prayers
+# Doing tasks in order
+# Completing tasks / keeping track of last time habit completed
+# Manually drag around and rearrange tasks
+# Going to bed not-at-midnight
 import csv
 from datetime import datetime
 import sys
@@ -32,8 +40,8 @@ monthNum = {
     'december': 12
 }
 
-startday = {"hour": 7, "minute": 45}
-endday = {"hour": 23, "minute": 59}
+startday = {"hour": 8, "minute": 0}
+endday = {"hour": 22, "minute": 0}
 
 
 class Task():
@@ -130,8 +138,11 @@ def scheduleDay(tasks, habits, events):
     moveable_todos = tasks + habits
     moveable_todos.sort(key=lambda x: (-x.priority, x.deadline()))
 
-    time = max(startday["hour"] * 60 + startday["minute"],
-               datetime.now().hour * 60 + datetime.now().minute)
+    if datetime.now().hour * 60 + datetime.now().minute >= endday["hour"] * 60 + endday["minute"]:
+        time = startday["hour"] * 60 + startday["minute"]
+    else:
+        time = max(startday["hour"] * 60 + startday["minute"],
+                   datetime.now().hour * 60 + datetime.now().minute)
 
     i = 0
     while time < endday["hour"] * 60 + endday["minute"]:
