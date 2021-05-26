@@ -7,7 +7,7 @@
 # Manually drag around and rearrange tasks
 # Going to bed not-at-midnight
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 from icecream import ic
 from pprint import PrettyPrinter, pformat
@@ -40,7 +40,7 @@ monthNum = {
     'december': 12
 }
 
-startday = {"hour": 8, "minute": 0}
+startday = {"hour": 7, "minute": 0}
 endday = {"hour": 22, "minute": 0}
 
 
@@ -128,8 +128,11 @@ class Event():
         return pformat(self.__dict__)
 
 
-def scheduleDay(tasks, habits, events):
-    dt = datetime.now()
+def scheduleDay(tasks, habits, events, offset=0):
+    if offset:
+        dt = datetime(datetime.now().year, datetime.now().month, datetime.now().day) + timedelta(days=offset)
+    else:
+        dt = datetime.now()
     daysEvents = [event for event in events if (
         event.year == dt.year and event.month == dt.month and event.day == dt.day) and event.end >= (dt.hour * 60 + dt.minute)]
     daysEvents.sort(key=lambda x: x.start)
@@ -138,11 +141,8 @@ def scheduleDay(tasks, habits, events):
     moveable_todos = tasks + habits
     moveable_todos.sort(key=lambda x: (-x.priority, x.deadline()))
 
-    if datetime.now().hour * 60 + datetime.now().minute >= endday["hour"] * 60 + endday["minute"]:
-        time = startday["hour"] * 60 + startday["minute"]
-    else:
-        time = max(startday["hour"] * 60 + startday["minute"],
-                   datetime.now().hour * 60 + datetime.now().minute)
+    time = max(startday["hour"] * 60 + startday["minute"],
+                dt.hour * 60 + dt.minute)
 
     i = 0
     while time < endday["hour"] * 60 + endday["minute"]:
@@ -196,4 +196,7 @@ with open('tasks.csv', newline='') as csvfile:
             events.append(Event(row[2], datetime.now().year, datetime.now(
             ).month, datetime.now().day, row[3], row[4], row[5], row[6]))
 
-scheduleDay(tasks, habits, events)
+try:
+    scheduleDay(tasks, habits, events, int(sys.argv[1]))
+except:
+    scheduleDay(tasks, habits, events)
